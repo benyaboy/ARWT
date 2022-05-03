@@ -14,23 +14,24 @@ namespace ARWT.Core{
         const string buildPlaceholder = "%UNITY_WEBGL_BUILD_URL%";
         const string imagesPlaceholder = "--IMAGES--";
         static string imagesPath = "images";
-        static string appJS = "js/app.js";
+        //static string appJS = "js/app.js";
         static string index = "index.html";
-        
+
         [PostProcessBuild]
         public static void OnPostProcessBuild(BuildTarget target, string targetPath){
             if(PlayerSettings.WebGL.template.Contains("WebXR")){
-                var path = Path.Combine(targetPath, "Build/UnityLoader.js");
+                //var path = Path.Combine(targetPath, "Build/UnityLoader.js");
+                var path = Path.Combine(targetPath, "Build/" + getName(targetPath) + ".loader.js");
                 var text = File.ReadAllText(path);
                 text = text.Replace("UnityLoader.SystemInfo.mobile", "false");
                 File.WriteAllText(path, text);
 
-                string buildJsonPath = "Build/" + getName(targetPath) + ".json";
-                path = Path.Combine(targetPath, "Build/" + getName(targetPath) + ".json");
-                replaceInFile(path, "backgroundColor", "");
+                //string buildJsonPath = "Build/" + getName(targetPath) + ".json";
+                //path = Path.Combine(targetPath, "Build/" + getName(targetPath) + ".json");
+                //replaceInFile(path, "backgroundColor", "");
 
-                string unityDeclaration = $"const unityInstance = UnityLoader.instantiate(\"unityContainer\", \"{buildJsonPath}\");";
-                replaceInFile(Path.Combine(targetPath, appJS), buildPlaceholder, unityDeclaration);
+                //string unityDeclaration = $"const unityInstance = UnityLoader.instantiate(\"unityContainer\", \"{buildJsonPath}\");";
+                //replaceInFile(Path.Combine(targetPath, appJS), buildPlaceholder, unityDeclaration);
 
                 searchImageLibrary(targetPath);
             }
@@ -38,16 +39,16 @@ namespace ARWT.Core{
 
         static void searchImageLibrary(string targetPath){
             string[] guids = AssetDatabase.FindAssets("t:ImageLibrary", null);
-            
+
             if(guids.Length > 0){
-                
+
                 List<TrackableImage> totalTrackables = new List<TrackableImage>();
-                
+
                 foreach (var g in guids) {
                     string path = AssetDatabase.GUIDToAssetPath(g);
                     ImageLibrary library = AssetDatabase.LoadAssetAtPath<ImageLibrary>(path);
                     var completeImagesPath = Path.Combine(targetPath, imagesPath);
-                    
+
                     foreach(var t in library.trackables){
                         var assetPath = AssetDatabase.GetAssetPath(t.image);
                         var destinationPath = Path.Combine(completeImagesPath, $"{t.name}.jpg");
@@ -57,7 +58,7 @@ namespace ARWT.Core{
                         totalTrackables.Add(t);
                     }
                 }
-                
+
                 generateImagesHTML(targetPath, totalTrackables);
             }
         }
@@ -79,7 +80,7 @@ namespace ARWT.Core{
             }else if(p.Contains("\\")){
                 pieces = p.Split('\\');
             }
-            return pieces[pieces.Length-1]; 
+            return pieces[pieces.Length-1];
         }
 
         static void replaceInFile(string indexPath, string lookingFor, string replace){
