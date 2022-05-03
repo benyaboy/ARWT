@@ -1,15 +1,25 @@
 ﻿using UnityEngine;
+using System.Runtime.InteropServices;
 
 namespace ARWT.Core{
     public class CameraController : MonoBehaviour{
-        
+     
+	    [DllImport("__Internal")]
+	    private static extern void ObjectAvailable();
+
+	    [DllImport("__Internal")]
+	    private static extern void CameraReady();
+
+	 
         Matrix4x4 defProj;
         Camera cam;
 
-        [System.Obsolete]
         void Start() {
             cam = GetComponent<Camera>();
-            Application.ExternalCall("cameraReady");
+        	
+			if(!Application.isEditor){
+		        CameraReady();
+	        }
             
             defProj = cam.projectionMatrix;
         }
@@ -92,6 +102,18 @@ namespace ARWT.Core{
 
             transform.eulerAngles = new Vector3(x, y, z);
         }
+
+	    public void ObjectCheck(string objectName){
+
+	    	if(GameObject.Find(objectName) != null){
+	    		if(!Application.isEditor){
+		    		ObjectAvailable();
+	    		}
+	    	}else{
+	    		Debug.LogError("There is no gameobject with the name " + objectName + " available for use!");
+	    	}
+	    }
+
 
     }
 }
